@@ -6,15 +6,11 @@
 #define REFRESH 1
 
 
-void print_time(Interval d) {
+void print_time(FormattedTime d) {
     mvprintw(0, 0, "%d : %2d : %2d : %2d\n", d.hour, d.min, d.sec, d.cs);
 }
 
-/**
- * @brief 
- * 
- */
-void add_to_chrono(Chrono* chrono, time_t tps_ms) {
+void add_to_chrono(FormattedTime* chrono, time_t tps_ms) {
     chrono->cs += nb_ms_vers_centiemes(tps_ms);
     chrono->sec += nb_ms_vers_secondes(tps_ms);
     chrono->min += nb_ms_vers_minutes(tps_ms);
@@ -26,7 +22,7 @@ int main(int argc, char* argv[]) {
     long int duree_totale = 0;
     bool pause = true;
     int touche;
-    Chrono chrono = {0, 0, 0, 0};
+    FormattedTime chrono = {0, 0, 0, 0};
 
     initscr();
     keypad(stdscr, TRUE);
@@ -48,14 +44,13 @@ int main(int argc, char* argv[]) {
             duree_totale = 0;
         }
         usleep(REFRESH * 1000);
-        if(!pause) {
+        if (!pause) {
             gettimeofday(&fin, NULL);
             duree_totale += intervalle_ms(debut, fin);
             debut = fin;
         }
-        //add_to_chrono(&chrono, duree_totale);
-        chrono = ms_to_Interval(duree_totale);
-        print_time(chrono);            
+        chrono = ms_to_FormattedTime(duree_totale);
+        print_time(chrono);
         if (touche == 'q')
             break;
     }

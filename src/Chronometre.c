@@ -21,7 +21,7 @@ Chronometer initialiser_chronometre() {
     return chrono;
 }
 void afficher_duree(int y, int x, int nb_ms) {
-    Interval d = ms_to_Interval(nb_ms);
+    FormattedTime d = ms_to_FormattedTime(nb_ms);
     mvprintw(y, x, "%d : %2d : %2d : %2d\n", d.hour, d.min, d.sec, d.cs);
 }
 

@@ -1,17 +1,16 @@
 #include <sys/time.h>
 
 typedef struct {
-    int cs;
-    int sec;
-    int min;
-    int hour;
-} Interval;
-typedef Interval Chrono;
+    time_t cs;
+    time_t sec;
+    time_t min;
+    time_t hour;
+} FormattedTime;
 
-int intervalle_ms(struct timeval debut, struct timeval fin);
-int nb_ms_vers_centiemes(int nb_ms);
-int nb_ms_vers_secondes(int nb_ms);
-int nb_ms_vers_minutes(int nb_ms);
-int nb_ms_vers_heures(int nb_ms);
-Interval ms_to_Interval(int ms) ;
+time_t intervalle_ms(struct timeval debut, struct timeval fin);
+time_t nb_ms_vers_centiemes(time_t nb_ms);
+time_t nb_ms_vers_secondes(time_t nb_ms);
+time_t nb_ms_vers_minutes(time_t nb_ms);
+time_t nb_ms_vers_heures(time_t nb_ms);
+FormattedTime ms_to_FormattedTime(time_t ms) ;
 

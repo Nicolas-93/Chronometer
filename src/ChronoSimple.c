@@ -1,3 +1,5 @@
+#define _DEFAULT_SOURCE
+
 #include <stdio.h>
 #include <sys/time.h>
 #include <stdbool.h>
@@ -6,23 +8,22 @@
 
 #define REFRESH 500
 
-void print_time(Interval d) {
-    printf("%d : %d : %d : %d\n", d.hour, d.min, d.sec, d.cs);
+void print_time(FormattedTime d) {
+    printf("\r%02ld : %02ld : %02ld : %02ld", d.hour, d.min, d.sec, d.cs);
+    fflush(stdout); // Actualise l'affichage car stdout est bufferisé
 }
 
 int main(int argc, char* argv[]) {
-    Interval duration;
+    FormattedTime duration;
     struct timeval debut, fin;
     gettimeofday(&debut, NULL);
 
     while (true) {
         gettimeofday(&fin, NULL);
-        duration = ms_to_Interval(intervalle_ms(debut, fin));
+        duration = ms_to_FormattedTime(intervalle_ms(debut, fin));
         print_time(duration);
         usleep(REFRESH * 1000);
     }
-    
-    
+
     return 0;
 }
-
