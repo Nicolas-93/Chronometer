@@ -1,0 +1,43 @@
+DEBUG_CVH_CLEANING?=no
+
+# Définition des variables
+CC=gcc
+BUILD_DIR=build
+EXEC=demo
+SRC_DIR=src
+INCLUDE=-Iinclude
+LIBS=-lMLV -lm
+CFLAGS=-fdiagnostics-color=always -Wall -pedantic -std=c17
+RELEASE_FLAGS=-O3 -Ofast
+DEBUG_FLAGS=-g
+SOURCES=$(wildcard $(SRC_DIR)/*.c)
+# "Substitution reference" / patsubst
+OBJECTS=$(SOURCES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+# $(info $(OBJECTS))
+
+ifeq ($(DEBUG_CVH_CLEANING), yes)
+	CFLAGS += -DDEBUG_CVH_CLEANING
+endif
+
+all: debug
+
+
+debug: CFLAGS += $(DEBUG_FLAGS)
+debug: $(EXEC)
+
+release: CFLAGS += $(RELEASE_FLAGS)
+release: $(EXEC)
+
+# Cible par défaut : l'exécutable demo
+$(EXEC): $(OBJECTS)
+	$(CC) $(INCLUDE) $(CFLAGS) $^ -o $(BUILD_DIR)/$@ $(LIBS)
+
+# Création des fichiers objets à partir des fichiers sources
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir --parents $(BUILD_DIR)
+	$(CC) $(INCLUDE) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(BUILD_DIR)/*.o $(BUILD_DIR)/demo
+
+.PHONY: clean all
