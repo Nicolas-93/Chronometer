@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include "TimeUtils/TimeUtils.h"
 #include <unistd.h>
-#define REFRESH 1
+#define REFRESH 500
 
 
 void print_time(FormattedTime d) {
@@ -25,11 +25,9 @@ int main(int argc, char* argv[]) {
     FormattedTime chrono = {0, 0, 0, 0};
 
     initscr();
-    keypad(stdscr, TRUE);
-    cbreak();
     noecho();
-    nodelay(stdscr, TRUE);
     curs_set(FALSE);
+    nodelay(stdscr, TRUE);
 
     while (1) {
         touche = getch();
