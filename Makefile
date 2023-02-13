@@ -16,6 +16,8 @@ CONTENU_ZIP=$(SRC_DIR) .clang-format .clang-tidy Makefile rapport.pdf
 all: $(PROGS)
 
 $(BUILD_DIR)/ChronoSimple: $(SRC_DIR)/TimeUtils/TimeUtils.c $(SRC_DIR)/ChronoSimple.c
+$(BUILD_DIR)/ChronoMoyen: $(SRC_DIR)/TimeUtils/TimeUtils.c $(SRC_DIR)/ChronoMoyen.c
+$(BUILD_DIR)/Chronometre: $(SRC_DIR)/TimeUtils/TimeUtils.c $(SRC_DIR)/Chronometre.c
 
 $(BUILD_DIR)/%: $(SRC_DIR)/%.c
 	@mkdir --parents $(BUILD_DIR)
