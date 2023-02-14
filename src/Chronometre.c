@@ -76,10 +76,42 @@ void ajouter_tour(Chronometer* chrono) {
     return;
 }
 
+int alert_keymap(Chronometer* chrono, int touche) {
+    switch (touche) {
+    case '1':
+    case KEY_F(1):
+        chrono->duration_alert += 60 * 60 * 1000;
+        break;
+    case '2':
+    case KEY_F(2):
+        chrono->duration_alert -= 60 * 60 * 1000;
+        break;
+    case '3':
+    case KEY_F(3):
+        chrono->duration_alert += 60 * 1000;
+        break;
+    case '4':
+    case KEY_F(4):
+        chrono->duration_alert -= 60 * 1000;
+        break;
+    case '5':
+    case KEY_F(5):
+        chrono->duration_alert += 1 * 1000;
+        break;
+    case '6':
+    case KEY_F(6):
+        chrono->duration_alert -= 1 * 1000;
+        break;
+    default:
+        return 0;
+    }
+    return 1;
+}
 
 int main(int argc, char* argv[]) {
     struct timeval debut, fin;
     bool pause = true;
+    bool quit = false;
     int touche;
     
     initscr();
@@ -91,43 +123,30 @@ int main(int argc, char* argv[]) {
     
     Chronometer chrono = initialiser_chronometre();
 
-    while (1) {
+    while (!quit) {
         touche = getch();
 
-        if (touche == ' ') {
+        switch (touche) {
+        case ' ':            
             if (pause) {
                 gettimeofday(&debut, NULL);
             }
             pause ^= 1;
-        }
-        else if (touche == 'r') {
-            pause = true;
-            chrono = initialiser_chronometre();;
-        }
-        else if (touche == 't') {
-            ajouter_tour(&chrono);
-        }
-        else if (touche == 'q') {
             break;
+        case 'r':
+            pause = true;
+            chrono = initialiser_chronometre();
+            break;
+        case 't':
+            ajouter_tour(&chrono);
+            break;
+        case 'q':
+            quit = true;
+            break;
+        default:
+            alert_keymap(&chrono, touche);
         }
-        else if (touche == '5') {
-            chrono.duration_alert += 1 * 1000;
-        }
-        else if (touche == '6') {
-            chrono.duration_alert -= 1 * 1000;
-        }
-        else if (touche == '3') {
-            chrono.duration_alert += 60 * 1000;
-        }
-        else if (touche == '4') {
-            chrono.duration_alert -= 60 * 1000;
-        }
-        else if (touche == '1') {
-            chrono.duration_alert += 60 * 60 * 1000;
-        }
-        else if (touche == '2') {
-            chrono.duration_alert -= 60 * 60 * 1000;
-        }
+
         usleep(REFRESH * 1000);
         if(!pause) {
             gettimeofday(&fin, NULL);
