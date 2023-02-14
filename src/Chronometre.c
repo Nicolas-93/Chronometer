@@ -1,10 +1,10 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Chronometre.h"
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include "Chronometre.h"
 
 #define REFRESH 50
 
@@ -79,7 +79,6 @@ void ajouter_tour(Chronometer* chrono) {
 
 int main(int argc, char* argv[]) {
     struct timeval debut, fin;
-    long int duree_totale = 0;
     bool pause = true;
     int touche;
     
@@ -103,7 +102,6 @@ int main(int argc, char* argv[]) {
         }
         else if (touche == 'r') {
             pause = true;
-            duree_totale = 0;
             chrono = initialiser_chronometre();;
         }
         else if (touche == 't') {
@@ -133,8 +131,7 @@ int main(int argc, char* argv[]) {
         usleep(REFRESH * 1000);
         if(!pause) {
             gettimeofday(&fin, NULL);
-            duree_totale += intervalle_ms(debut, fin);
-            chrono.total_ms += duree_totale;
+            chrono.total_ms += intervalle_ms(debut, fin);
             debut = fin;
         }
         afficher_interface(chrono);
