@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#define REFRESH 500
+#define REFRESH 50
 
 
 Chronometer initialiser_chronometre() {
@@ -26,11 +26,11 @@ void afficher_duree(int y, int x, int nb_ms) {
 }
 
 void afficher_interface(Chronometer chrono) {
-    mvprintw(0, COLS / 2, "== Chronometre == \n");
+    mvprintw(0, COLS / 2, "== Chronometre ==\n");
 
-    for (int i = chrono.turn_saved; i > chrono.turn_saved - 3; --i) {
+    for (int i = 0; i < 3; ++i) {
         printw("Tour %d : ", i);
-        afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.total_ms);
+        afficher_duree(1 + i, getcurx(stdscr), chrono.turns[i]);
     }
     printw("Alerte : ");
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.duration_alert);
@@ -38,16 +38,16 @@ void afficher_interface(Chronometer chrono) {
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.total_ms);
 
     static char* options[] = {
-        "Espace : lancer / mettre en pause\n",
-        "r : reinitialiser\n",
-        "t : marquer tour\n",
-        "F1/F2 : incrementer / decrementer heure avertissement\n",
-        "F3/F4 : incrementer / decrementer minute avertissement\n",
-        "F5/F6 : incrementer / decrementer seconde avertissement\n",
+        "Espace : lancer / mettre en pause",
+        "r : reinitialiser",
+        "t : marquer tour",
+        "F1/F2 : incrementer / decrementer heure avertissement",
+        "F3/F4 : incrementer / decrementer minute avertissement",
+        "F5/F6 : incrementer / decrementer seconde avertissement",
         "q : quitter"
     };
-    for (int i = 8; i >= 0; --i) {
-        mvprintw(LINES - i, 0, options[8 - i]);
+    for (int i = 6; i >= 0; --i) {
+        mvprintw(LINES - i - 2, 0, options[6 - i]);
     }
 }
 
@@ -82,19 +82,17 @@ int main(int argc, char* argv[]) {
     long int duree_totale = 0;
     bool pause = true;
     int touche;
-    initscr();
     
-    start_color();
+    initscr();
+    //cbreak();
     keypad(stdscr, TRUE);
-    cbreak();
-    noecho();
     nodelay(stdscr, TRUE);
+    noecho();
     curs_set(FALSE);
     
     Chronometer chrono = initialiser_chronometre();
 
     while (1) {
-        afficher_interface(chrono);
         touche = getch();
 
         if (touche == ' ') {
@@ -114,22 +112,22 @@ int main(int argc, char* argv[]) {
         else if (touche == 'q') {
             break;
         }
-        else if (touche == KEY_F(5)) {
+        else if (touche == '5') {
             chrono.duration_alert += 1 * 1000;
         }
-        else if (touche == KEY_F(6)) {
+        else if (touche == '6') {
             chrono.duration_alert -= 1 * 1000;
         }
-        else if (touche == KEY_F(3)) {
+        else if (touche == '3') {
             chrono.duration_alert += 60 * 1000;
         }
-        else if (touche == KEY_F(4)) {
+        else if (touche == '4') {
             chrono.duration_alert -= 60 * 1000;
         }
-        else if (touche == KEY_F(1)) {
+        else if (touche == '1') {
             chrono.duration_alert += 60 * 60 * 1000;
         }
-        else if (touche == KEY_F(2)) {
+        else if (touche == '2') {
             chrono.duration_alert -= 60 * 60 * 1000;
         }
         usleep(REFRESH * 1000);
@@ -138,6 +136,7 @@ int main(int argc, char* argv[]) {
             duree_totale += intervalle_ms(debut, fin);
             debut = fin;
         }
+        afficher_interface(chrono);
     }
     getch();
     endwin();
