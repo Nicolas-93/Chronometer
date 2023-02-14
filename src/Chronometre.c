@@ -134,6 +134,7 @@ int main(int argc, char* argv[]) {
         if(!pause) {
             gettimeofday(&fin, NULL);
             duree_totale += intervalle_ms(debut, fin);
+            chrono.total_ms += duree_totale;
             debut = fin;
         }
         afficher_interface(chrono);
