@@ -2,11 +2,12 @@
 title: Perfectionnement à la programmation C
 subtitle: TP2
 date: 6 février 2023
+colorlinks: true
 author:
     - Nicolas SEBAN
     - Amir POUYANFAR
 geometry: margin=3cm
-header-includes: 
+header-includes:
     - \usepackage{graphicx}
     - \usepackage{fancyhdr}
     # https://ctex.org/documents/packages/layout/fancyhdr.pdf

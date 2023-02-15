@@ -1,15 +1,18 @@
 #include <sys/time.h>
-#include "TimeUtils/TimeUtils.h"
 #include <stdbool.h>
-#define MAX_SIZE 20
+#include "TimeUtils/TimeUtils.h"
+#define MAX_TURNS 7
+
+#define MIN(a, b) ((a < b) ? (a) : (b))
+#define MAX(a, b) ((a > b) ? (a) : (b))
 
 typedef struct {
     bool active;
-    int total_ms;
-    int duration_alert;
+    time_t total_ms;
+    time_t duration_alert;
     int turn_index;
     int turn_saved;
-    int turns[MAX_SIZE];
+    int turns[MAX_TURNS];
 } Chronometer;
 
 Chronometer initialiser_chronometre();

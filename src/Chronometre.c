@@ -7,12 +7,23 @@
 #include "Chronometre.h"
 
 #define REFRESH 50
+#define CENTER_X COLS / 2
+#define CENTER_Y LINES / 2
+
+#define STR_TITRE "== Chronometre =="
+#define STR_TIME "%02d : %02d : %02d : %02d"
 
 
+/**
+ * @brief Initialise le chronomètre avec un avertissement
+ * au bout de 25 secondes.
+ * 
+ * @return Chronometer 
+ */
 Chronometer initialiser_chronometre() {
     Chronometer chrono = {
         .active = false,
-        .duration_alert = 25,
+        .duration_alert = 25 * 1000,
         .total_ms = 0,
         .turn_index = 0,
         .turn_saved = 0,
@@ -20,21 +31,68 @@ Chronometer initialiser_chronometre() {
     memset(&(chrono.turns), 0, sizeof(int));
     return chrono;
 }
+
+/**
+ * @brief Réinitialise le chronomètre en conservant
+ * le réglage de l'avertissement.
+ * 
+ * @param chrono 
+ */
+void reset_chronometre(Chronometer* chrono) {
+    time_t alerte = chrono->duration_alert;
+    memset(chrono, 0, sizeof(Chronometer));
+    chrono->duration_alert = alerte;
+}
+
+/**
+ * @brief Affiche le temps en millisecondes passé en paramètre.
+ * 
+ * @param y 
+ * @param x 
+ * @param nb_ms 
+ */
 void afficher_duree(int y, int x, int nb_ms) {
     FormattedTime d = ms_to_FormattedTime(nb_ms);
-    mvprintw(y, x, "%d : %2d : %2d : %2d\n", d.hour, d.min, d.sec, d.cs);
+    mvprintw(
+        y, x,
+        STR_TIME"\n", d.hour, d.min, d.sec, d.cs
+    );
+}
+
+/**
+ * @brief Affiche chacun des tours.
+ * 
+ * @param y 
+ * @param x 
+ * @param chrono 
+ */
+void afficher_tours(int y, int x, Chronometer chrono) {
+    //int nb_lines = MIN(chrono.turn_saved , MIN((LINES - 10 - 3), 0));
+    int nb_lignes = 5;
+    int debut = MAX(1, chrono.turn_saved - nb_lignes);
+    int fin = chrono.turn_saved;
+
+    if (chrono.turn_saved == 0)
+        return;
+
+    // Affiche les tours de début à fin en numérotant les tours à partir de 1
+    for (int i_tour = debut, i_print = 0; i_tour <= fin; ++i_tour, ++i_print) {
+        mvprintw(y + i_print, CENTER_X - sizeof(STR_TIME), "Tour %1d : ", i_tour);
+        afficher_duree(
+            getcury(stdscr), CENTER_X - sizeof(STR_TIME) / 2,
+            chrono.turns[chrono.turn_saved - i_tour]
+        );
+    }
 }
 
 void afficher_interface(Chronometer chrono) {
-    mvprintw(0, COLS / 2, "== Chronometre ==\n");
+    mvprintw(0, CENTER_X - sizeof(STR_TITRE) / 2, STR_TITRE);
 
-    for (int i = 0; i < 3; ++i) {
-        printw("Tour %d : ", i);
-        afficher_duree(1 + i, getcurx(stdscr), chrono.turns[i]);
-    }
-    printw("Alerte : ");
+    afficher_tours(1, 0, chrono);
+
+    mvprintw(15, CENTER_X - sizeof(STR_TIME) / 2, "Alerte : ");
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.duration_alert);
-    printw("Chrono : ");
+    mvprintw(16, CENTER_X - sizeof(STR_TIME) / 2, "Chrono : ");
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.total_ms);
 
     static char* options[] = {
@@ -64,18 +122,32 @@ void afficher_flash() {
         }
     }
 }
-
+/**
+ * @brief Ajoute un tour au chronometre et décale les autres tours.
+ * 
+ * @param chrono 
+ */
 void ajouter_tour(Chronometer* chrono) {
-    chrono->turn_index++;
     chrono->turn_saved++;
+    if (chrono->turn_index < MAX_TURNS - 1) {
+        chrono->turn_index++;
+    }
 
-    memmove(&(chrono->turns[1]), &(chrono->turns[0]), chrono->turn_saved * sizeof(int));
-
+    for (int i = chrono->turn_index; i > 0; --i) {
+        chrono->turns[i] = chrono->turns[i - 1];
+    }
     chrono->turns[0] = chrono->total_ms;
-    
+
     return;
 }
 
+/**
+ * @brief Gère les touches de paramétrage de l'avertissement.
+ * 
+ * @param chrono 
+ * @param touche 
+ * @return int 
+ */
 int alert_keymap(Chronometer* chrono, int touche) {
     switch (touche) {
     case '1':
@@ -135,7 +207,7 @@ int main(int argc, char* argv[]) {
             break;
         case 'r':
             pause = true;
-            chrono = initialiser_chronometre();
+            reset_chronometre(&chrono);
             break;
         case 't':
             ajouter_tour(&chrono);
@@ -145,6 +217,8 @@ int main(int argc, char* argv[]) {
             break;
         default:
             alert_keymap(&chrono, touche);
+        case KEY_RESIZE:
+            clear();
         }
 
         usleep(REFRESH * 1000);
