@@ -119,6 +119,12 @@ void afficher_tours(int y, int x, Chronometer chrono) {
     }
 }
 
+
+/**
+ * @brief Affiche l'interface
+ * 
+ * @param chrono chronomètre
+ */
 void afficher_interface(Chronometer chrono) {
     int len_strtime = len_affichage_duree(chrono.duration_alert);
     
@@ -229,7 +235,12 @@ int alert_keymap(Chronometer* chrono, int touche) {
     default:
         return 0;
     }
+
+    if ((chrono->duration_alert < 0) || (chrono->duration_alert > 99 * 1000 * 3600))
+        chrono->duration_alert = 0;
+
     chrono->alerte_flag = true;
+
     return 1;
 }
 
@@ -240,7 +251,6 @@ int main(int argc, char* argv[]) {
     int touche;
     
     initscr();
-    //cbreak();
     keypad(stdscr, TRUE);
     nodelay(stdscr, TRUE);
     noecho();
@@ -286,7 +296,7 @@ int main(int argc, char* argv[]) {
             alert_keymap(&chrono, touche);
         }
 
-        if(chrono.total_ms >= chrono.duration_alert && chrono.alerte_flag) {
+        if(chrono.total_ms > chrono.duration_alert && chrono.alerte_flag) {
             afficher_flash(chrono);
             chrono.alerte_flag = false;
             clear();
