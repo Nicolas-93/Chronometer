@@ -16,9 +16,26 @@
 #define STR_ALERTE "Alerte : "
 #define STR_CHRONO "Chrono : "
 #define STR_TOUR "Tour %2d : "
-#define NB_PRINT_TURNS 5
+#define STR_ERR_TOO_SMALL_WINDOW "La fenêtre est trop petite pour afficher le chronomètre."
+#define NB_MAX_PRINT_TURNS 6
 #define FLASH_REPEAT 5
 
+const int options_len = 8;
+const char* options_strings[] = {
+    "Espace : lancer / mettre en pause",
+    "r : reinitialiser",
+    "t : marquer tour",
+    "Fleches haut/bas: defilement des tours",
+    "F1/F2 : incrementer / decrementer heure avertissement",
+    "F3/F4 : incrementer / decrementer minute avertissement",
+    "F5/F6 : incrementer / decrementer seconde avertissement",
+    "q : quitter"
+};
+
+enum error {
+    ERR_NONE,
+    ERR_TOO_SMALL_WINDOW,
+};
 
 /**
  * @brief Initialise le chronomètre avec un avertissement
@@ -31,11 +48,12 @@ Chronometer initialiser_chronometre() {
         .active = false,
         .duration_alert = 25 * 1000,
         .total_ms = 0,
+        .turns = {0},
         .turn_index = 0,
         .turn_saved = 0,
         .alerte_flag = true,
     };
-    memset(&(chrono.turns), 0, sizeof(int));
+    // memset(&(chrono.turns), 0, sizeof(int));
     return chrono;
 }
 
@@ -93,13 +111,13 @@ int len_affichage_duree(int nb_ms) {
  * @param chrono 
  */
 void afficher_tours(int y, int x, Chronometer chrono) {
-    //int nb_lines = MIN(chrono.turn_saved , MIN((LINES - 10 - 3), 0));
-    int nb_lignes = NB_PRINT_TURNS - 1;
+    int nb_lignes = MIN(NB_MAX_PRINT_TURNS - 1, LINES - options_len - NB_MAX_PRINT_TURNS);
     int debut = MAX(1, chrono.turn_saved - nb_lignes) + chrono.scroll;
     int fin = chrono.turn_saved + chrono.scroll;
 
     // mvprintw(LINES - 1, COLS - 40, "debut=%3d, fin=%3d, scroll=%3d", debut, fin, chrono.scroll);
 
+    // Si il n'y aucun tour sauvegardé, on n'affiche rien
     if (chrono.turn_saved == 0)
         return;
 
@@ -119,6 +137,14 @@ void afficher_tours(int y, int x, Chronometer chrono) {
     }
 }
 
+/**
+ * @brief Fonction affichant un caractère n fois à la position (y, x).
+ * 
+ */
+void repete_caractere(int y, int x, int n, char c) {
+    for (int i = 0; i < n; ++i)
+        mvaddch(y, x + i, c);
+}
 
 /**
  * @brief Affiche l'interface
@@ -132,32 +158,35 @@ void afficher_interface(Chronometer chrono) {
 
     afficher_tours(1, 0, chrono);
 
+    repete_caractere(LINES - options_len - 4, 0, COLS, '-');
+
     mvprintw(
-        8, CENTER_X - (len_strtime + sizeof(STR_ALERTE)) / 2,
-        STR_ALERTE
-    );
-    afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.duration_alert);
-    mvprintw(
-        9, CENTER_X - (len_strtime + sizeof(STR_CHRONO)) / 2,
+        LINES - options_len - 3, CENTER_X - (len_strtime + sizeof(STR_CHRONO)) / 2,
         STR_CHRONO
     );
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.total_ms);
+    mvprintw(
+        getcury(stdscr), CENTER_X - (len_strtime + sizeof(STR_ALERTE)) / 2,
+        STR_ALERTE
+    );
+    afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.duration_alert);
 
-    static const char* options[] = {
-        "Espace : lancer / mettre en pause",
-        "r : reinitialiser",
-        "t : marquer tour",
-        "F1/F2 : incrementer / decrementer heure avertissement",
-        "F3/F4 : incrementer / decrementer minute avertissement",
-        "F5/F6 : incrementer / decrementer seconde avertissement",
-        "q : quitter"
-    };
-    for (int i = 6; i >= 0; --i) {
-        mvprintw(LINES - i - 1, 0, "%s", options[6 - i]);
+    repete_caractere(LINES - options_len - 1, 0, COLS, '-');
+
+    for (int i = options_len - 1; i >= 0; --i) {
+        mvprintw(LINES - i - 1, 0, "%s", options_strings[options_len - 1 - i]);
     }
 }
 
+/**
+ * @brief Affiche un damier alternant entre rouge et vert,
+ * pendant un certain nombre de répétitions défini par
+ * la constante FLASH_REPEAT.
+ * 
+ * @param chrono 
+ */
 void afficher_flash(Chronometer chrono) {
+    
     if(chrono.alerte_flag == false)
         return;
 
@@ -168,8 +197,8 @@ void afficher_flash(Chronometer chrono) {
 
     for (int r = 0; r < FLASH_REPEAT; ++r) {    
         mode = r % 2 + 1;
-        for(int i = 0; i < LINES - 1; ++i) {
-            for(int j = 0; j < COLS - 1; ++j) {
+        for (int i = 0; i < LINES; ++i) {
+            for (int j = 0; j < COLS; ++j) {
                 inner_mode = ((i + j) + mode) % 2 + 1;
                 attron(COLOR_PAIR(inner_mode));
                 mvprintw(i, j, "*");
@@ -177,9 +206,10 @@ void afficher_flash(Chronometer chrono) {
             }
         }
         refresh();
-        usleep(500000);
+        usleep(500 * 1000);
     }
 }
+
 /**
  * @brief Ajoute un tour au chronometre et décale les autres tours.
  * 
@@ -245,11 +275,12 @@ int alert_keymap(Chronometer* chrono, int touche) {
 }
 
 int main(int argc, char* argv[]) {
-    struct timeval debut, fin;
+    struct timeval debut = {0}, fin = {0};
     bool pause = true;
     bool quit = false;
     int touche;
-    
+
+    // Initialisation de ncurses
     initscr();
     keypad(stdscr, TRUE);
     nodelay(stdscr, TRUE);
@@ -278,12 +309,14 @@ int main(int argc, char* argv[]) {
             ajouter_tour(&chrono);
             chrono.scroll = 0;
             break;
-        case 'u':
+        case BUTTON5_PRESSED:
+        case KEY_UP:
             if (chrono.scroll < 0)
                 chrono.scroll += 1;
             break;
-        case 'd':
-            if (ABS(chrono.scroll) < chrono.turn_index - NB_PRINT_TURNS)
+        case BUTTON4_PRESSED:
+        case KEY_DOWN:
+            if (ABS(chrono.scroll) < chrono.turn_index - NB_MAX_PRINT_TURNS + 1)
                 chrono.scroll -= 1;
             break;
         case 'q':
@@ -296,6 +329,10 @@ int main(int argc, char* argv[]) {
             alert_keymap(&chrono, touche);
         }
 
+        // Si la taille de la console est trop petite, on quitte
+        if (LINES < 14 || COLS < 58) {
+            quit = ERR_TOO_SMALL_WINDOW;
+        }
         if(chrono.total_ms > chrono.duration_alert && chrono.alerte_flag) {
             afficher_flash(chrono);
             chrono.alerte_flag = false;
@@ -311,8 +348,12 @@ int main(int argc, char* argv[]) {
         afficher_interface(chrono);
     }
 
+    clear();
     getch();
     endwin();
+    
+    if (quit == ERR_TOO_SMALL_WINDOW)
+        fprintf(stderr, "\nLa taille de la fenêtre est trop petite.\n");
 
     return 0;
 }

@@ -1,7 +1,7 @@
 #include <sys/time.h>
 #include <stdbool.h>
 #include "TimeUtils/TimeUtils.h"
-#define MAX_TURNS 10
+#define MAX_TURNS 15
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
