@@ -9,6 +9,7 @@
 
 typedef struct {
     bool active;
+    bool alerte_flag;
     time_t total_ms;
     time_t duration_alert;
     int turn_index;

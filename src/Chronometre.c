@@ -17,6 +17,7 @@
 #define STR_CHRONO "Chrono : "
 #define STR_TOUR "Tour %2d : "
 #define NB_PRINT_TURNS 5
+#define FLASH_REPEAT 5
 
 
 /**
@@ -32,6 +33,7 @@ Chronometer initialiser_chronometre() {
         .total_ms = 0,
         .turn_index = 0,
         .turn_saved = 0,
+        .alerte_flag = true,
     };
     memset(&(chrono.turns), 0, sizeof(int));
     return chrono;
@@ -148,18 +150,25 @@ void afficher_interface(Chronometer chrono) {
     }
 }
 
-void afficher_flash() {
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    init_pair(2, COLOR_RED, COLOR_BLACK);
+void afficher_flash(Chronometer chrono) {
+    if(chrono.alerte_flag == false)
+        return;
+    init_pair(1, COLOR_GREEN, COLOR_GREEN);
+    init_pair(2, COLOR_RED, COLOR_RED);
     int mode = 1;
 
-    for(int i = 0; i < LINES - 1; ++i) {
-        for(int j = 0; j < COLS - 1; ++j) {
-            mode = (i + j) % 2 + 1;
-            attron(COLOR_PAIR(mode));
-            mvprintw(i, j, "*");
-            attroff(COLOR_PAIR(mode));
+    for (int r = 0; r < FLASH_REPEAT; ++r) {    
+        mode = r % 2 + 1;
+        for(int i = 0; i < LINES - 1; ++i) {
+            for(int j = 0; j < COLS - 1; ++j) {
+                mode = (i + j) % 2 + 1;
+                attron(COLOR_PAIR(mode));
+                mvprintw(i, j, "*");
+                attroff(COLOR_PAIR(mode));
+            }
         }
+        refresh();
+        usleep(250000);
     }
 }
 /**
@@ -232,6 +241,7 @@ int main(int argc, char* argv[]) {
     nodelay(stdscr, TRUE);
     noecho();
     curs_set(FALSE);
+    start_color();
     
     Chronometer chrono = initialiser_chronometre();
 
@@ -272,7 +282,13 @@ int main(int argc, char* argv[]) {
             alert_keymap(&chrono, touche);
         }
 
+        if(chrono.total_ms >= chrono.duration_alert && chrono.alerte_flag) {
+            afficher_flash(chrono);
+            chrono.alerte_flag = false;
+            clear();
+        }
         usleep(REFRESH * 1000);
+        
         if(!pause) {
             gettimeofday(&fin, NULL);
             chrono.total_ms += intervalle_ms(debut, fin);
