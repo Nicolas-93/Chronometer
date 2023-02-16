@@ -49,6 +49,7 @@ void reset_chronometre(Chronometer* chrono) {
     time_t alerte = chrono->duration_alert;
     memset(chrono, 0, sizeof(Chronometer));
     chrono->duration_alert = alerte;
+    chrono->alerte_flag = true;
 }
 
 /**
@@ -153,22 +154,24 @@ void afficher_interface(Chronometer chrono) {
 void afficher_flash(Chronometer chrono) {
     if(chrono.alerte_flag == false)
         return;
+
     init_pair(1, COLOR_GREEN, COLOR_GREEN);
     init_pair(2, COLOR_RED, COLOR_RED);
     int mode = 1;
+    int inner_mode = 1;
 
     for (int r = 0; r < FLASH_REPEAT; ++r) {    
         mode = r % 2 + 1;
         for(int i = 0; i < LINES - 1; ++i) {
             for(int j = 0; j < COLS - 1; ++j) {
-                mode = (i + j) % 2 + 1;
-                attron(COLOR_PAIR(mode));
+                inner_mode = ((i + j) + mode) % 2 + 1;
+                attron(COLOR_PAIR(inner_mode));
                 mvprintw(i, j, "*");
-                attroff(COLOR_PAIR(mode));
+                attroff(COLOR_PAIR(inner_mode));
             }
         }
         refresh();
-        usleep(250000);
+        usleep(500000);
     }
 }
 /**
@@ -226,6 +229,7 @@ int alert_keymap(Chronometer* chrono, int touche) {
     default:
         return 0;
     }
+    chrono->alerte_flag = true;
     return 1;
 }
 
