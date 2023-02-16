@@ -7,17 +7,17 @@ time_t intervalle_ms(struct timeval debut, struct timeval fin) {
     sec *= (long int) 1e6;
     return (sec + usec) / 1000;
 }
-time_t nb_ms_vers_secondes(time_t nb_ms) {
+int nb_ms_vers_secondes(time_t nb_ms) {
     return (nb_ms / (1000 * 1)) % 60;
 }
-time_t nb_ms_vers_minutes(time_t nb_ms) {
+int nb_ms_vers_minutes(time_t nb_ms) {
     return (nb_ms / (1000 * 60)) % 60;
 }
-time_t nb_ms_vers_heures(time_t nb_ms) {
+int nb_ms_vers_heures(time_t nb_ms) {
     return (nb_ms / (1000 * 60 * 60)) % 24;
 }
 
-time_t nb_ms_vers_centiemes(time_t nb_ms) {
+int nb_ms_vers_centiemes(time_t nb_ms) {
     return (nb_ms / 10) % 100;
 }
 

@@ -11,7 +11,11 @@
 #define CENTER_Y LINES / 2
 
 #define STR_TITRE "== Chronometre =="
-#define STR_TIME "%02d : %02d : %02d : %02d"
+// #define STR_TIME "%02d : %02d : %02d : %02d"
+#define STR_TIME "%2d : %2d : %2d : %2d"
+#define STR_ALERTE "Alerte : "
+#define STR_CHRONO "Chrono : "
+#define STR_TOUR "Tour %2d : "
 
 
 /**
@@ -60,6 +64,24 @@ void afficher_duree(int y, int x, int nb_ms) {
 }
 
 /**
+ * @brief Calcule la taille d'affichage d'une durée.
+ * Calcule une seule fois pour toute l'exécution la taille
+ * du texte formaté. Il serait possible de la modifier
+ * pour gérer plus de 99 heures.
+ * 
+ * @param nb_ms Nombre de millisecondes.
+ * 
+ */
+int len_affichage_duree(int nb_ms) {
+    static int len_strtime = 0;
+    if (!len_strtime) {
+        FormattedTime d = ms_to_FormattedTime(nb_ms);
+        len_strtime = snprintf(NULL, 0, STR_TIME"\n", d.hour, d.min, d.sec, d.cs) - 1;
+    }
+    return len_strtime;
+}
+
+/**
  * @brief Affiche chacun des tours.
  * 
  * @param y 
@@ -75,27 +97,42 @@ void afficher_tours(int y, int x, Chronometer chrono) {
     if (chrono.turn_saved == 0)
         return;
 
+
     // Affiche les tours de début à fin en numérotant les tours à partir de 1
     for (int i_tour = debut, i_print = 0; i_tour <= fin; ++i_tour, ++i_print) {
-        mvprintw(y + i_print, CENTER_X - sizeof(STR_TIME), "Tour %1d : ", i_tour);
+        int turn_ms = chrono.turns[chrono.turn_saved - i_tour];
+        int len_strtime = len_affichage_duree(turn_ms);
+        mvprintw(
+            y + i_print,
+            CENTER_X - (len_strtime + sizeof(STR_TOUR)) / 2,
+            STR_TOUR, i_tour
+        );
         afficher_duree(
-            getcury(stdscr), CENTER_X - sizeof(STR_TIME) / 2,
-            chrono.turns[chrono.turn_saved - i_tour]
+            getcury(stdscr), getcurx(stdscr),
+            turn_ms
         );
     }
 }
 
 void afficher_interface(Chronometer chrono) {
+    int len_strtime = len_affichage_duree(chrono.duration_alert);
+    
     mvprintw(0, CENTER_X - sizeof(STR_TITRE) / 2, STR_TITRE);
 
     afficher_tours(1, 0, chrono);
 
-    mvprintw(15, CENTER_X - sizeof(STR_TIME) / 2, "Alerte : ");
+    mvprintw(
+        8, CENTER_X - (len_strtime + sizeof(STR_ALERTE)) / 2,
+        STR_ALERTE
+    );
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.duration_alert);
-    mvprintw(16, CENTER_X - sizeof(STR_TIME) / 2, "Chrono : ");
+    mvprintw(
+        9, CENTER_X - (len_strtime + sizeof(STR_CHRONO)) / 2,
+        STR_CHRONO
+    );
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.total_ms);
 
-    static char* options[] = {
+    static const char* options[] = {
         "Espace : lancer / mettre en pause",
         "r : reinitialiser",
         "t : marquer tour",
@@ -105,7 +142,7 @@ void afficher_interface(Chronometer chrono) {
         "q : quitter"
     };
     for (int i = 6; i >= 0; --i) {
-        mvprintw(LINES - i - 2, 0, options[6 - i]);
+        mvprintw(LINES - i - 1, 0, "%s", options[6 - i]);
     }
 }
 

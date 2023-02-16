@@ -1,7 +1,7 @@
 ---
 title: Perfectionnement à la programmation C
-subtitle: TP2
-date: 6 février 2023
+subtitle: TP3 - Chronomètre
+date: 13 février 2023
 colorlinks: true
 author:
     - Nicolas SEBAN

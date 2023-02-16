@@ -9,7 +9,7 @@
 #define REFRESH 500
 
 void print_time(FormattedTime d) {
-    printf("\r%02ld : %02ld : %02ld : %02ld", d.hour, d.min, d.sec, d.cs);
+    printf("\r%02d : %02d : %02d : %02d", d.hour, d.min, d.sec, d.cs);
     fflush(stdout); // Actualise l'affichage car stdout est bufferisé
 }
 
