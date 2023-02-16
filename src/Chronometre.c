@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include "Chronometre.h"
 
-#define REFRESH 50
+#define REFRESH 10 // ms
 #define CENTER_X COLS / 2
 #define CENTER_Y LINES / 2
 
@@ -16,6 +16,7 @@
 #define STR_ALERTE "Alerte : "
 #define STR_CHRONO "Chrono : "
 #define STR_TOUR "Tour %2d : "
+#define NB_PRINT_TURNS 5
 
 
 /**
@@ -90,13 +91,14 @@ int len_affichage_duree(int nb_ms) {
  */
 void afficher_tours(int y, int x, Chronometer chrono) {
     //int nb_lines = MIN(chrono.turn_saved , MIN((LINES - 10 - 3), 0));
-    int nb_lignes = 5;
-    int debut = MAX(1, chrono.turn_saved - nb_lignes);
-    int fin = chrono.turn_saved;
+    int nb_lignes = NB_PRINT_TURNS - 1;
+    int debut = MAX(1, chrono.turn_saved - nb_lignes) + chrono.scroll;
+    int fin = chrono.turn_saved + chrono.scroll;
+
+    // mvprintw(LINES - 1, COLS - 40, "debut=%3d, fin=%3d, scroll=%3d", debut, fin, chrono.scroll);
 
     if (chrono.turn_saved == 0)
         return;
-
 
     // Affiche les tours de début à fin en numérotant les tours à partir de 1
     for (int i_tour = debut, i_print = 0; i_tour <= fin; ++i_tour, ++i_print) {
@@ -150,6 +152,7 @@ void afficher_flash() {
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
     init_pair(2, COLOR_RED, COLOR_BLACK);
     int mode = 1;
+
     for(int i = 0; i < LINES - 1; ++i) {
         for(int j = 0; j < COLS - 1; ++j) {
             mode = (i + j) % 2 + 1;
@@ -245,17 +248,28 @@ int main(int argc, char* argv[]) {
         case 'r':
             pause = true;
             reset_chronometre(&chrono);
+            clear();
             break;
         case 't':
             ajouter_tour(&chrono);
+            chrono.scroll = 0;
+            break;
+        case 'u':
+            if (chrono.scroll < 0)
+                chrono.scroll += 1;
+            break;
+        case 'd':
+            if (ABS(chrono.scroll) < chrono.turn_index - NB_PRINT_TURNS)
+                chrono.scroll -= 1;
             break;
         case 'q':
             quit = true;
             break;
-        default:
-            alert_keymap(&chrono, touche);
         case KEY_RESIZE:
             clear();
+            break;
+        default:
+            alert_keymap(&chrono, touche);
         }
 
         usleep(REFRESH * 1000);
@@ -266,7 +280,9 @@ int main(int argc, char* argv[]) {
         }
         afficher_interface(chrono);
     }
+
     getch();
     endwin();
+
     return 0;
 }
