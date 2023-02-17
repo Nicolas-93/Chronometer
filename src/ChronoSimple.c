@@ -1,10 +1,10 @@
 #define _DEFAULT_SOURCE
 
+#include "TimeUtils/TimeUtils.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <sys/time.h>
-#include <stdbool.h>
 #include <unistd.h>
-#include "TimeUtils/TimeUtils.h"
 
 #define REFRESH 500
 
