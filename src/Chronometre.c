@@ -203,7 +203,7 @@ void afficher_flash(Chronometer chrono) {
             for (int j = 0; j < COLS; ++j) {
                 inner_mode = ((i + j) + mode) % 3 + 1;
                 attron(COLOR_PAIR(inner_mode));
-                mvprintw(i, j, "*");
+                mvprintw(i, j, "$");
                 attroff(COLOR_PAIR(inner_mode));
             }
         }
