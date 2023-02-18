@@ -193,14 +193,15 @@ void afficher_flash(Chronometer chrono) {
 
     init_pair(1, COLOR_GREEN, COLOR_GREEN);
     init_pair(2, COLOR_RED, COLOR_RED);
+    init_pair(3, COLOR_BLUE, COLOR_BLUE);
     int mode = 1;
     int inner_mode = 1;
 
     for (int r = 0; r < FLASH_REPEAT; ++r) {
-        mode = r % 2 + 1;
+        mode = r % 3 + 1;
         for (int i = 0; i < LINES; ++i) {
             for (int j = 0; j < COLS; ++j) {
-                inner_mode = ((i + j) + mode) % 2 + 1;
+                inner_mode = ((i + j) + mode) % 3 + 1;
                 attron(COLOR_PAIR(inner_mode));
                 mvprintw(i, j, "*");
                 attroff(COLOR_PAIR(inner_mode));
