@@ -25,11 +25,11 @@ $(BUILD_DIR)/%: $(SRC_DIR)/%.c
 
 rapport: rapport.pdf
 
-rapport.pdf: rapport.md
+%.pdf: %.md
 	@mkdir --parents logos
 	@wget --quiet --show-progress --no-clobber -O logos/LogoLIGM.png "https://drive.google.com/uc?export=download&confirm=yes&id=1cZjxS6Rwp8LU4Eyahqz0eUS8aH0_VrVB" || true
 	@wget --quiet --show-progress --no-clobber -O logos/namedlogoUGE.png "https://drive.google.com/uc?export=download&confirm=yes&id=1YGm1N7griuDbJhC6rSgBHrrcOsHKM5xg" || true
-	pandoc --toc rapport.md -o rapport.pdf
+	pandoc --toc $< -o $@
 
 format: $(SOURCES) $(HEADERS)
 	clang-format -i --style=file $?
