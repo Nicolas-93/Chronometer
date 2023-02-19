@@ -41,15 +41,18 @@ typedef enum Error {
     ERR_TOO_SMALL_WINDOW,
 } Error;
 
-typedef enum ColorsPairs {
+typedef enum ColorPair {
     PAIR_TITLE = 1,
+    PAIR_ALERTE = 1,
     PAIR_TOUR,
-    PAIR_DUREE,
+    PAIR_DUREE1,
+    PAIR_DUREE2,
+    PAIR_RT_CHRONO,
     PAIR_OPTIONS,
     PAIR_FLASH1,
     PAIR_FLASH2,
     PAIR_FLASH3,
-} ColorsPairs;
+} ColorPair;
 
 /**
  * @brief Initialise le chronomètre avec un avertissement
@@ -93,9 +96,7 @@ void reset_chronometre(Chronometer* chrono) {
  */
 void afficher_duree(int y, int x, int nb_ms) {
     FormattedTime d = ms_to_FormattedTime(nb_ms);
-    attron(COLOR_PAIR(PAIR_DUREE) ^ A_BOLD);
     mvprintw(y, x, STR_TIME "\n", d.hour, d.min, d.sec, d.cs);
-    attroff(COLOR_PAIR(PAIR_DUREE) ^ A_BOLD);
 }
 
 /**
@@ -129,6 +130,7 @@ void afficher_tours(int y, int x, Chronometer chrono) {
         MIN(NB_MAX_PRINT_TURNS - 1, LINES - options_len - NB_MAX_PRINT_TURNS);
     int debut = MAX(1, chrono.turn_saved - nb_lignes) + chrono.scroll;
     int fin = chrono.turn_saved + chrono.scroll;
+    enum ColorPair color_tour = PAIR_DUREE1;
 
     // mvprintw(LINES - 1, COLS - 40, "debut=%3d, fin=%3d, scroll=%3d", debut,
     // fin, chrono.scroll);
@@ -141,14 +143,19 @@ void afficher_tours(int y, int x, Chronometer chrono) {
     for (int i_tour = debut, i_print = 0; i_tour <= fin; ++i_tour, ++i_print) {
         int turn_ms = chrono.turns[chrono.turn_saved - i_tour];
         int len_strtime = len_affichage_duree(turn_ms);
+        color_tour = i_print % 2 + PAIR_DUREE1;
+
         attron(COLOR_PAIR(PAIR_TOUR));
         mvprintw(
             y + i_print,
             CENTER_X - (len_strtime + sizeof(STR_TOUR)) / 2,
             STR_TOUR,
             i_tour);
-        attroff(COLOR_PAIR(PAIR_TOUR));    
+        attroff(COLOR_PAIR(PAIR_TOUR));
+
+        attron(COLOR_PAIR(color_tour) ^ A_BOLD);
         afficher_duree(getcury(stdscr), getcurx(stdscr), turn_ms);
+        attroff(COLOR_PAIR(color_tour) ^ A_BOLD);
     }
 }
 
@@ -172,7 +179,9 @@ void init_colors_pairs() {
     init_pair(PAIR_TITLE, COLOR_RED, COLOR_BLACK);
     init_pair(PAIR_TOUR, COLOR_MAGENTA, COLOR_BLACK);
     init_pair(PAIR_OPTIONS, COLOR_BLUE, COLOR_BLACK);
-    init_pair(PAIR_DUREE, COLOR_GREEN, COLOR_BLACK);
+    init_pair(PAIR_DUREE1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(PAIR_DUREE2, COLOR_CYAN, COLOR_BLACK);
+    init_pair(PAIR_RT_CHRONO, COLOR_YELLOW, COLOR_BLACK);
 }
 
 /**
@@ -182,9 +191,11 @@ void init_colors_pairs() {
  */
 void afficher_interface(Chronometer chrono) {
     int len_strtime = len_affichage_duree(chrono.duration_alert);
+
     attron(COLOR_PAIR(PAIR_TITLE) ^ A_BOLD);
     mvprintw(0, CENTER_X - sizeof(STR_TITRE) / 2, STR_TITRE);
     attroff(COLOR_PAIR(PAIR_TITLE) ^ A_BOLD);
+
     afficher_tours(1, 0, chrono);
 
     repete_caractere(LINES - options_len - 4, 0, COLS, '-');
@@ -193,12 +204,19 @@ void afficher_interface(Chronometer chrono) {
         LINES - options_len - 3,
         CENTER_X - (len_strtime + sizeof(STR_CHRONO)) / 2,
         STR_CHRONO);
+
+    attron(COLOR_PAIR(PAIR_RT_CHRONO) ^ A_BOLD);
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.total_ms);
+    attroff(COLOR_PAIR(PAIR_RT_CHRONO) ^ A_BOLD);
+    
     mvprintw(
         getcury(stdscr),
         CENTER_X - (len_strtime + sizeof(STR_ALERTE)) / 2,
         STR_ALERTE);
+
+    attron(COLOR_PAIR(PAIR_ALERTE));
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.duration_alert);
+    attroff(COLOR_PAIR(PAIR_ALERTE));
 
     repete_caractere(LINES - options_len - 1, 0, COLS, '-');
     attron(COLOR_PAIR(PAIR_OPTIONS) ^ A_ITALIC);
