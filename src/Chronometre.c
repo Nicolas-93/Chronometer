@@ -170,7 +170,7 @@ void repete_caractere(int y, int x, int n, char c) {
 
 /**
  * @brief Initialise les pairs de couleurs ncurses.
- * 
+ *
  */
 void init_colors_pairs() {
     init_pair(PAIR_FLASH1, COLOR_GREEN, COLOR_GREEN);
@@ -208,7 +208,7 @@ void afficher_interface(Chronometer chrono) {
     attron(COLOR_PAIR(PAIR_RT_CHRONO) ^ A_BOLD);
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.total_ms);
     attroff(COLOR_PAIR(PAIR_RT_CHRONO) ^ A_BOLD);
-    
+
     mvprintw(
         getcury(stdscr),
         CENTER_X - (len_strtime + sizeof(STR_ALERTE)) / 2,
@@ -312,15 +312,33 @@ int alert_keymap(Chronometer* chrono, int touche) {
         return 0;
     }
 
-    // Si on dépasse les limites (alerte négative ou supérieure à 99h),
-    // on remet à 0
-    if ((chrono->duration_alert < 0) ||
-        (chrono->duration_alert > 99 * 1000 * 3600))
-        chrono->duration_alert = 0;
-
     chrono->alerte_flag = true;
 
     return 1;
+}
+
+int is_over_99h(int ms) {
+    return ms > (99 * 1000 * 3600);
+}
+
+/**
+ * @brief Vérifie que les paramètres du chronomètre sont corrects.
+ * et les corrige si possible (temps au dessus de 99h, alerte négative...)
+ * 
+ * @param chrono 
+ * @return int 
+ */
+int securise_chronometre(Chronometer* chrono) {
+    // Si on dépasse les limites on remet à 0
+    if (is_over_99h(chrono->total_ms)) {
+        chrono->total_ms = 0;
+    }
+
+    if ((chrono->duration_alert < 0) ||
+        is_over_99h(chrono->duration_alert))
+        chrono->duration_alert = 0;
+
+    return ERR_NONE;
 }
 
 int main(int argc, char* argv[]) {
@@ -378,6 +396,7 @@ int main(int argc, char* argv[]) {
         default:
             alert_keymap(&chrono, touche);
         }
+        securise_chronometre(&chrono);
 
         // Si la taille de la console est trop petite, on quitte
         if (LINES < 14 || COLS < 58) {

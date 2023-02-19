@@ -1,5 +1,9 @@
 #include <sys/time.h>
 
+/**
+ * @brief Structure séparant les composantes d'un temps.
+ * 
+ */
 typedef struct {
     int cs;
     int sec;
