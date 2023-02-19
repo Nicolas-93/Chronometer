@@ -23,10 +23,24 @@ header-includes:
 \pagebreak
 
 # Introduction
+- Le but de ce TP est d'implémenter un chronomètre muni de fonctions assez avancées comme minuteur, ainsi que la possibilité de compter
+les tours. 
 
 # Réponses
 
 ## Exercice 1
+1. La fonction ```int intervalle_ms(struct timeval debut, struct timeval fin)``` reçois le début et la fin d'un intervalle et renvoie
+la durée en milisecondes. 
+2. Les quatre fonctions :
+- ``` int nb_ms_vers_centiemes(int nb_ms)``` 
+- ``` int nb_ms_vers_secondes(int nb_ms)```
+- ``` int nb_ms_vers_minutes(int nb_ms)```
+- ``` int nb_ms_vers_heures(int nb_ms)```
+ 
+ convertissent une durée (milisecondes), en heures, minutes, secondes et centièmes de secondes.
+
+3. 
+4. 
 
 ## Exercice 2
 

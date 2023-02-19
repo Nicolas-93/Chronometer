@@ -82,8 +82,11 @@ void reset_chronometre(Chronometer* chrono) {
  * @param nb_ms
  */
 void afficher_duree(int y, int x, int nb_ms) {
+    init_pair(4, COLOR_GREEN, COLOR_BLACK);
     FormattedTime d = ms_to_FormattedTime(nb_ms);
+    attron(COLOR_PAIR(4) ^ A_BOLD);
     mvprintw(y, x, STR_TIME "\n", d.hour, d.min, d.sec, d.cs);
+    attroff(COLOR_PAIR(4) ^ A_BOLD);
 }
 
 /**
@@ -117,6 +120,7 @@ void afficher_tours(int y, int x, Chronometer chrono) {
         MIN(NB_MAX_PRINT_TURNS - 1, LINES - options_len - NB_MAX_PRINT_TURNS);
     int debut = MAX(1, chrono.turn_saved - nb_lignes) + chrono.scroll;
     int fin = chrono.turn_saved + chrono.scroll;
+    init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
 
     // mvprintw(LINES - 1, COLS - 40, "debut=%3d, fin=%3d, scroll=%3d", debut,
     // fin, chrono.scroll);
@@ -129,11 +133,13 @@ void afficher_tours(int y, int x, Chronometer chrono) {
     for (int i_tour = debut, i_print = 0; i_tour <= fin; ++i_tour, ++i_print) {
         int turn_ms = chrono.turns[chrono.turn_saved - i_tour];
         int len_strtime = len_affichage_duree(turn_ms);
+        attron(COLOR_PAIR(5));
         mvprintw(
             y + i_print,
             CENTER_X - (len_strtime + sizeof(STR_TOUR)) / 2,
             STR_TOUR,
             i_tour);
+        attroff(COLOR_PAIR(5));    
         afficher_duree(getcury(stdscr), getcurx(stdscr), turn_ms);
     }
 }
@@ -154,9 +160,10 @@ void repete_caractere(int y, int x, int n, char c) {
  */
 void afficher_interface(Chronometer chrono) {
     int len_strtime = len_affichage_duree(chrono.duration_alert);
-
+    init_pair(7, COLOR_RED, COLOR_BLACK);
+    attron(COLOR_PAIR(7) ^ A_BOLD);
     mvprintw(0, CENTER_X - sizeof(STR_TITRE) / 2, STR_TITRE);
-
+    attroff(COLOR_PAIR(7) ^ A_BOLD);
     afficher_tours(1, 0, chrono);
 
     repete_caractere(LINES - options_len - 4, 0, COLS, '-');
@@ -173,10 +180,12 @@ void afficher_interface(Chronometer chrono) {
     afficher_duree(getcury(stdscr), getcurx(stdscr), chrono.duration_alert);
 
     repete_caractere(LINES - options_len - 1, 0, COLS, '-');
-
+    init_pair(6, COLOR_BLUE, COLOR_BLACK);
+    attron(COLOR_PAIR(6) ^ A_ITALIC);
     for (int i = options_len - 1; i >= 0; --i) {
         mvprintw(LINES - i - 1, 0, "%s", options_strings[options_len - 1 - i]);
     }
+    attroff(COLOR_PAIR(6) ^ A_ITALIC);
 }
 
 /**
@@ -203,7 +212,7 @@ void afficher_flash(Chronometer chrono) {
             for (int j = 0; j < COLS; ++j) {
                 inner_mode = ((i + j) + mode) % 3 + 1;
                 attron(COLOR_PAIR(inner_mode));
-                mvprintw(i, j, "*");
+                mvprintw(i, j, "$");
                 attroff(COLOR_PAIR(inner_mode));
             }
         }
