@@ -1,5 +1,13 @@
 {
     "files.associations": {
-        "ncurses.h": "c"
+        "ncurses.h": "c",
+        "stdio.h": "c",
+        "time.h": "c",
+        "compare": "c",
+        "type_traits": "c",
+        "stdbool.h": "c",
+        "chronometre.h": "c",
+        "unistd.h": "c",
+        "queue.h": "c"
     }
 }

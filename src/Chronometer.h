@@ -11,11 +11,11 @@ typedef struct {
     bool active;
     bool alerte_flag;
     time_t total_ms;
-    time_t duration_alert;
+    time_t alert;
     int turn_index;
     int turn_saved;
     int turns[MAX_TURNS];
     int scroll;
 } Chronometer;
 
-Chronometer initialiser_chronometre();
+Chronometer init_chronometer(void);
