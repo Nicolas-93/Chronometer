@@ -1,5 +1,7 @@
 # Chronometer
 
+![Alt text](img/image.png)
+
 # Features
 
 - Save laps
